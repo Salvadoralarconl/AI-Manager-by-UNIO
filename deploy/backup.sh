@@ -8,7 +8,7 @@
 # which takes a consistent snapshot even while web and runner are writing.
 # Project files written during the copy may be caught mid-write; pause work
 # in the dashboard first if you need a perfectly quiet copy.
-# Demo data (demo.db, demo-projects/) and secrets (.env) are not included.
+# Demo data (demo.db, demo-projects/) and secrets (.env, .session-secret) are not included.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -61,8 +61,9 @@ echo "Archiving project files..."
 # shellcheck disable=SC2016  # expanded inside the container
 in_app '
   cd /data
-  set -- $(ls -A | grep -vE "^(app\.db(-wal|-shm|-journal)?|demo\.db.*|demo-projects|\.backup-tmp)$" || true)
-  if [ $# -gt 0 ]; then tar -czf - "$@"; else tar -czf - -T /dev/null; fi
+  set -- $(ls -A | grep -vE "^(app\.db(-wal|-shm|-journal)?|demo\.db.*|demo-projects|\.backup-tmp|\.session-secret)$" || true)
+  # busybox tar refuses an empty archive, so write an empty one by hand on a fresh install.
+  if [ $# -gt 0 ]; then tar -czf - "$@"; else head -c 10240 /dev/zero | gzip -c; fi
 ' >"$TMP/files.tar.gz"
 
 APP_VER=$(docker compose run --rm --no-deps -T --entrypoint node web -p 'require("./package.json").version' 2>/dev/null || echo unknown)

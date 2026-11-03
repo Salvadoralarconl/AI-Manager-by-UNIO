@@ -10,12 +10,12 @@
 #      unless --no-safety-backup is given.
 #   3. Stop web, runner and proxy so nothing writes during the restore.
 #   4. Replace the database and project files in the data volume
-#      (demo data is left alone).
+#      (demo data and .session-secret are left alone).
 #   5. Start the stack again.
 #
-# Runs that were in progress when the backup was taken come back with an
-# unknown outcome. The runner's recovery marks them for review rather than
-# repeating them, so check Attention items in the dashboard afterwards.
+# Runs that were in progress when the backup was taken are recovered like a
+# crash: internal work is re-queued with one attempt used, and external actions
+# with an unknown outcome are blocked for review instead of being repeated.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -62,7 +62,7 @@ echo "Restoring into the data volume..."
 # shellcheck disable=SC2016  # expanded inside the container
 in_app '
   cd /data
-  for f in $(ls -A | grep -vE "^(demo\.db.*|demo-projects)$" || true); do rm -rf "./$f"; done
+  for f in $(ls -A | grep -vE "^(demo\.db.*|demo-projects|\.session-secret)$" || true); do rm -rf "./$f"; done
 '
 in_app 'tar -xzf - -C /data' <"$SRC/files.tar.gz"
 if [[ -f "$SRC/app.db" ]]; then
