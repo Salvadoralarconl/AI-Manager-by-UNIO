@@ -1,0 +1,10 @@
+[Unit]
+Description=AI Manager backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# Change this if you installed somewhere other than /opt/ai-manager.
+WorkingDirectory=/opt/ai-manager
+ExecStart=/bin/bash /opt/ai-manager/deploy/backup.sh

@@ -1,0 +1,16 @@
+{
+  "name": "ai-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted dashboard and execution runner for a small AI team across multiple projects.",
+  "type": "module",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "runner": "node --disable-warning=ExperimentalWarning src/runner.js",
+    "dev": "node --disable-warning=ExperimentalWarning src/dev.js",
+    "demo": "DEMO_MODE=1 node --disable-warning=ExperimentalWarning src/dev.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js",
+    "hash-password": "node src/hash-password.js"
+  }
+}

@@ -1,0 +1,40 @@
+# Optional HTTPS front for the dashboard (docker compose --profile proxy up -d).
+# Login is handled by the app itself; Caddy adds TLS and response headers.
+#
+# SITE_ADDRESS in .env:
+#   dash.example.com   public hostname, automatic Let's Encrypt certificate
+#                      (DNS must point here and ports 80/443 must be open)
+#   192.168.1.20       LAN IP, certificate from Caddy's own local CA
+#                      ("tls internal" below; trust it once on your devices)
+{
+	admin 127.0.0.1:2019
+	# Optional: an address for Let's Encrypt expiry notices.
+	# email you@example.com
+}
+
+{$SITE_ADDRESS::443} {
+	# For a LAN IP or a name without public DNS, uncomment:
+	# tls internal
+
+	encode zstd gzip
+
+	reverse_proxy web:8080 {
+		# Stream server-sent events (/api/stream) without buffering.
+		flush_interval -1
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		X-Robots-Tag "noindex, nofollow"
+		-Server
+	}
+
+	# Caddy redacts Cookie and Authorization headers in access logs.
+	log {
+		output stdout
+		format json
+	}
+}

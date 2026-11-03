@@ -1,0 +1,108 @@
+# AI Manager on a single Ubuntu host.
+#
+#   web     Dashboard, JSON API and live updates (SSE). Owns login.
+#   runner  Scheduler + worker slots. Exactly one instance (it owns task claiming).
+#   proxy   Optional Caddy for HTTPS on a LAN or a public hostname
+#           (enable with --profile proxy). Not needed with Tailscale Serve.
+#
+# All data (SQLite database, project artifacts) lives in the "data" volume.
+# Services restart automatically, and Docker starts on boot, so the stack
+# returns after crashes and reboots.
+#
+#   docker compose up -d --build        start / update
+#   docker compose ps                   health of each service
+#   docker compose logs -f web runner   follow logs
+
+name: ai-manager
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "${LOG_MAX_SIZE:-20m}"
+    max-file: "${LOG_MAX_FILES:-5}"
+
+x-app: &app
+  image: ai-manager:${APP_VERSION:-latest}
+  build: .
+  init: true                      # forwards SIGTERM so runs can checkpoint on shutdown
+  restart: unless-stopped
+  logging: *logging
+  env_file:
+    - path: .env
+      required: true
+  environment:
+    # Fixed inside the container; .env cannot move them.
+    DATA_DIR: /data
+    HOST: 0.0.0.0
+    PORT: "8080"
+  volumes:
+    - data:/data
+  extra_hosts:
+    # Lets LOCAL_AI_URL use http://host.docker.internal:PORT for a model server on this machine.
+    - "host.docker.internal:host-gateway"
+  security_opt:
+    - no-new-privileges:true
+  read_only: true
+  tmpfs:
+    - /tmp
+
+services:
+  web:
+    <<: *app
+    command: ["node", "--disable-warning=ExperimentalWarning", "src/server.js"]
+    ports:
+      # Loopback by default: reach it through Tailscale Serve or the proxy.
+      # Set WEB_BIND to a LAN/Tailscale IP only if you know you want that.
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+    stop_grace_period: 15s
+
+  runner:
+    <<: *app
+    command: ["node", "--disable-warning=ExperimentalWarning", "src/runner.js"]
+    depends_on:
+      web:
+        condition: service_started   # web creates/migrates the database on boot
+    healthcheck:
+      # Passes when the runner's heartbeat in the database is fresh. A heartbeat
+      # proves the loop is alive, not that a task is making progress.
+      test: ["CMD", "node", "--disable-warning=ExperimentalWarning", "src/runner.js", "--healthcheck"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    # Time for in-flight runs to record their state before the process is killed.
+    stop_grace_period: 60s
+
+  proxy:
+    profiles: ["proxy"]
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:443}
+    ports:
+      - "${PROXY_BIND:-0.0.0.0}:${PROXY_HTTP_PORT:-80}:80"
+      - "${PROXY_BIND:-0.0.0.0}:${PROXY_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  data:
+  caddy-data:
+  caddy-config:

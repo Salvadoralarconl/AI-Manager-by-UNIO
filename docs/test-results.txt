@@ -1,0 +1,368 @@
+
+> ai-manager@0.1.0 test
+> node --disable-warning=ExperimentalWarning --test test/*.test.js
+
+TAP version 13
+# Subtest: full loop: execute → artifact → manager review → completed
+ok 1 - full loop: execute → artifact → manager review → completed
+  ---
+  duration_ms: 49.870151
+  type: 'test'
+  ...
+# Subtest: project data separation: context, dependencies, assignments and artifacts stay in their project
+ok 2 - project data separation: context, dependencies, assignments and artifacts stay in their project
+  ---
+  duration_ms: 63.001296
+  type: 'test'
+  ...
+# Subtest: dependencies run in order; failed dependency blocks dependents
+ok 3 - dependencies run in order; failed dependency blocks dependents
+  ---
+  duration_ms: 108.470921
+  type: 'test'
+  ...
+# Subtest: review rework is bounded and escalates to the owner
+ok 4 - review rework is bounded and escalates to the owner
+  ---
+  duration_ms: 170.829077
+  type: 'test'
+  ...
+# Subtest: retries are bounded; flaky work recovers; owner retry resets
+ok 5 - retries are bounded; flaky work recovers; owner retry resets
+  ---
+  duration_ms: 146.418942
+  type: 'test'
+  ...
+# Subtest: agent capacity, project concurrency and global concurrency are enforced
+ok 6 - agent capacity, project concurrency and global concurrency are enforced
+  ---
+  duration_ms: 54.052278
+  type: 'test'
+  ...
+# Subtest: fair scheduling: a busy project cannot starve another
+ok 7 - fair scheduling: a busy project cannot starve another
+  ---
+  duration_ms: 240.490907
+  type: 'test'
+  ...
+# Subtest: pause all, project pause and agent pause stop new work; cancel stops running work
+ok 8 - pause all, project pause and agent pause stop new work; cancel stops running work
+  ---
+  duration_ms: 61.450976
+  type: 'test'
+  ...
+# Subtest: budget caps block paid work and reservations count in-flight runs
+ok 9 - budget caps block paid work and reservations count in-flight runs
+  ---
+  duration_ms: 71.49424
+  type: 'test'
+  ...
+# Subtest: paid providers are not used without credentials and explicit enablement
+ok 10 - paid providers are not used without credentials and explicit enablement
+  ---
+  duration_ms: 16.21389
+  type: 'test'
+  ...
+# Subtest: stale telemetry shows unknown, never an indefinite Working
+ok 11 - stale telemetry shows unknown, never an indefinite Working
+  ---
+  duration_ms: 28.348108
+  type: 'test'
+  ...
+# Subtest: restart recovery: internal work is requeued once, external work with unknown outcome is not repeated
+ok 12 - restart recovery: internal work is requeued once, external work with unknown outcome is not repeated
+  ---
+  duration_ms: 20.249852
+  type: 'test'
+  ...
+# Subtest: duplicate execution is prevented across two runners
+ok 13 - duplicate execution is prevented across two runners
+  ---
+  duration_ms: 16.953299
+  type: 'test'
+  ...
+# Subtest: intern fallback: unavailable Intern work is reassigned once when permitted
+ok 14 - intern fallback: unavailable Intern work is reassigned once when permitted
+  ---
+  duration_ms: 56.528093
+  type: 'test'
+  ...
+# Subtest: invalid task transitions are rejected
+ok 15 - invalid task transitions are rejected
+  ---
+  duration_ms: 11.640044
+  type: 'test'
+  ...
+# Subtest: openai: paid execution off sends nothing
+ok 16 - openai: paid execution off sends nothing
+  ---
+  duration_ms: 1.773621
+  type: 'test'
+  ...
+# Subtest: openai: missing key sends nothing
+ok 17 - openai: missing key sends nothing
+  ---
+  duration_ms: 0.18212
+  type: 'test'
+  ...
+# Subtest: openai: worst case over run limit sends nothing
+ok 18 - openai: worst case over run limit sends nothing
+  ---
+  duration_ms: 0.162819
+  type: 'test'
+  ...
+# Subtest: openai: unpriced model with a cost limit sends nothing
+ok 19 - openai: unpriced model with a cost limit sends nothing
+  ---
+  duration_ms: 0.093078
+  type: 'test'
+  ...
+# Subtest: openai: implements the adapter interface
+ok 20 - openai: implements the adapter interface
+  ---
+  duration_ms: 0.135581
+  type: 'test'
+  ...
+# Subtest: anthropic: paid execution off sends nothing
+ok 21 - anthropic: paid execution off sends nothing
+  ---
+  duration_ms: 0.238526
+  type: 'test'
+  ...
+# Subtest: anthropic: missing key sends nothing
+ok 22 - anthropic: missing key sends nothing
+  ---
+  duration_ms: 0.154914
+  type: 'test'
+  ...
+# Subtest: anthropic: worst case over run limit sends nothing
+ok 23 - anthropic: worst case over run limit sends nothing
+  ---
+  duration_ms: 0.070455
+  type: 'test'
+  ...
+# Subtest: anthropic: unpriced model with a cost limit sends nothing
+ok 24 - anthropic: unpriced model with a cost limit sends nothing
+  ---
+  duration_ms: 0.185277
+  type: 'test'
+  ...
+# Subtest: anthropic: implements the adapter interface
+ok 25 - anthropic: implements the adapter interface
+  ---
+  duration_ms: 0.232233
+  type: 'test'
+  ...
+# Subtest: openai: builds a Responses API request scoped to the project
+ok 26 - openai: builds a Responses API request scoped to the project
+  ---
+  duration_ms: 15.045461
+  type: 'test'
+  ...
+# Subtest: openai: usage treats cached and cache-write tokens as parts of input
+ok 27 - openai: usage treats cached and cache-write tokens as parts of input
+  ---
+  duration_ms: 0.515144
+  type: 'test'
+  ...
+# Subtest: openai: dated snapshot priced as base model; unknown model is "unknown" cost
+ok 28 - openai: dated snapshot priced as base model; unknown model is "unknown" cost
+  ---
+  duration_ms: 0.659065
+  type: 'test'
+  ...
+# Subtest: openai: review mode uses strict JSON schema and returns a verdict
+ok 29 - openai: review mode uses strict JSON schema and returns a verdict
+  ---
+  duration_ms: 0.445774
+  type: 'test'
+  ...
+# Subtest: openai: unreadable review fails and is retryable
+ok 30 - openai: unreadable review fails and is retryable
+  ---
+  duration_ms: 0.361912
+  type: 'test'
+  ...
+# Subtest: openai: incomplete and refusal are failures that keep usage
+ok 31 - openai: incomplete and refusal are failures that keep usage
+  ---
+  duration_ms: 0.533496
+  type: 'test'
+  ...
+# Subtest: openai: HTTP errors are classified and redacted
+ok 32 - openai: HTTP errors are classified and redacted
+  ---
+  duration_ms: 2.086306
+  type: 'test'
+  ...
+# Subtest: openai: network failure is retryable with outcome unknown
+ok 33 - openai: network failure is retryable with outcome unknown
+  ---
+  duration_ms: 0.208134
+  type: 'test'
+  ...
+# Subtest: openai: makes exactly one call (never retries itself)
+ok 34 - openai: makes exactly one call (never retries itself)
+  ---
+  duration_ms: 0.239035
+  type: 'test'
+  ...
+# Subtest: openai: healthCheck lists models (free) and reports bad keys
+ok 35 - openai: healthCheck lists models (free) and reports bad keys
+  ---
+  duration_ms: 0.485924
+  type: 'test'
+  ...
+# Subtest: anthropic: builds a streamed Messages API request with cached system prompt
+ok 36 - anthropic: builds a streamed Messages API request with cached system prompt
+  ---
+  duration_ms: 2.8967
+  type: 'test'
+  ...
+# Subtest: anthropic: usage sums uncached, cache reads and writes; cost from billed model
+ok 37 - anthropic: usage sums uncached, cache reads and writes; cost from billed model
+  ---
+  duration_ms: 1.616308
+  type: 'test'
+  ...
+# Subtest: anthropic: refusal, max_tokens and stream error are failures
+ok 38 - anthropic: refusal, max_tokens and stream error are failures
+  ---
+  duration_ms: 0.702665
+  type: 'test'
+  ...
+# Subtest: anthropic: HTTP 401 is not retryable and key is redacted
+ok 39 - anthropic: HTTP 401 is not retryable and key is redacted
+  ---
+  duration_ms: 0.232308
+  type: 'test'
+  ...
+# Subtest: anthropic: cancel mid-stream reports cancelled with partial usage
+ok 40 - anthropic: cancel mid-stream reports cancelled with partial usage
+  ---
+  duration_ms: 20.751486
+  type: 'test'
+  ...
+# Subtest: anthropic: workers do not review
+ok 41 - anthropic: workers do not review
+  ---
+  duration_ms: 0.119251
+  type: 'test'
+  ...
+# Subtest: anthropic: healthCheck uses the free models endpoint
+ok 42 - anthropic: healthCheck uses the free models endpoint
+  ---
+  duration_ms: 0.326255
+  type: 'test'
+  ...
+# Subtest: local: runs without paid execution and records local cost
+ok 43 - local: runs without paid execution and records local cost
+  ---
+  duration_ms: 0.565408
+  type: 'test'
+  ...
+# Subtest: local: base URL normalisation
+ok 44 - local: base URL normalisation
+  ---
+  duration_ms: 0.094156
+  type: 'test'
+  ...
+# Subtest: local: not configured, unreachable, length-limited
+ok 45 - local: not configured, unreachable, length-limited
+  ---
+  duration_ms: 0.378065
+  type: 'test'
+  ...
+# Subtest: local: healthCheck lists models
+ok 46 - local: healthCheck lists models
+  ---
+  duration_ms: 2.780508
+  type: 'test'
+  ...
+# Subtest: intern eval: perfect model is eligible everywhere; bad one is not
+ok 47 - intern eval: perfect model is eligible everywhere; bad one is not
+  ---
+  duration_ms: 1.602028
+  type: 'test'
+  ...
+# Subtest: pricing: Haiku long-prompt tier applies over 100k prompt tokens
+ok 48 - pricing: Haiku long-prompt tier applies over 100k prompt tokens
+  ---
+  duration_ms: 0.121345
+  type: 'test'
+  ...
+# Subtest: pricing: worst case always >= actual for the same request
+ok 49 - pricing: worst case always >= actual for the same request
+  ---
+  duration_ms: 0.109118
+  type: 'test'
+  ...
+# Subtest: budget: reservations for in-flight calls count against caps
+ok 50 - budget: reservations for in-flight calls count against caps
+  ---
+  duration_ms: 0.168432
+  type: 'test'
+  ...
+# Subtest: budget: rollup keeps estimated, unknown, local and simulated apart
+ok 51 - budget: rollup keeps estimated, unknown, local and simulated apart
+  ---
+  duration_ms: 0.197744
+  type: 'test'
+  ...
+# Subtest: authentication: API and pages require sign-in; healthz is open; login is rate limited
+ok 52 - authentication: API and pages require sign-in; healthz is open; login is rate limited
+  ---
+  duration_ms: 64.145139
+  type: 'test'
+  ...
+# Subtest: scrypt password hash works
+ok 53 - scrypt password hash works
+  ---
+  duration_ms: 140.935894
+  type: 'test'
+  ...
+# Subtest: state-changing requests need the same-origin header (CSRF)
+ok 54 - state-changing requests need the same-origin header (CSRF)
+  ---
+  duration_ms: 20.05151
+  type: 'test'
+  ...
+# Subtest: secrets never reach client responses, exports or error messages
+ok 55 - secrets never reach client responses, exports or error messages
+  ---
+  duration_ms: 30.831239
+  type: 'test'
+  ...
+# Subtest: settings validation and pause control
+ok 56 - settings validation and pause control
+  ---
+  duration_ms: 22.648295
+  type: 'test'
+  ...
+# Subtest: empty state: overview works with no projects
+ok 57 - empty state: overview works with no projects
+  ---
+  duration_ms: 34.640017
+  type: 'test'
+  ...
+# Subtest: demo data only goes into the separate demo database
+ok 58 - demo data only goes into the separate demo database
+  ---
+  duration_ms: 41.883283
+  type: 'test'
+  ...
+# Subtest: artifact download is scoped to its project directory
+ok 59 - artifact download is scoped to its project directory
+  ---
+  duration_ms: 18.824391
+  type: 'test'
+  ...
+1..59
+# tests 59
+# suites 0
+# pass 59
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1278.489062

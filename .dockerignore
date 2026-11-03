@@ -1,0 +1,15 @@
+# Keep secrets, data and local clutter out of the image.
+.env
+.env.*
+!.env.example
+data/
+backups/
+node_modules/
+test/
+docs/
+deploy/
+.git/
+*.log
+*.db
+*.db-wal
+*.db-shm

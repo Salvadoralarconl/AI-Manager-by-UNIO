@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Sign in · AI Manager</title>
+  <link rel="icon" href="/icon.svg">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <main class="login">
+    <form id="login">
+      <h1>AI Manager</h1>
+      <label class="f">Password<input type="password" name="password" autocomplete="current-password" required autofocus></label>
+      <button class="btn primary" type="submit">Sign in</button>
+      <p class="err" id="err" role="alert"></p>
+    </form>
+  </main>
+  <script type="module" src="/login.js"></script>
+</body>
+</html>
