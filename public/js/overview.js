@@ -1,5 +1,5 @@
-// Overview: header, project switcher, selected project, global Team, Latest work.
-import { api, html, raw, icon, avatar, status, providerLabel, clock, dueIn, spendLabel, STATUS_LABEL, openDialog, toast } from './ui.js';
+// Overview (Folio-style calm overview): greeting, stat cards, project list, selected project, Latest work, global Team.
+import { api, html, raw, icon, avatar, status, providerLabel, clock, dueIn, money, STATUS_LABEL, openDialog, toast } from './ui.js';
 import { connHtml, live, go, route } from './main.js';
 
 const KEY = 'aim.selectedProject';
@@ -19,15 +19,14 @@ export async function renderOverview(r) {
 
   const s = d.summary;
   const runnerStale = !d.runner?.fresh;
+  const openTasks = d.projects.reduce((n, p) => n + (p.open_tasks || 0), 0);
+  const active = d.projects.filter((p) => p.status === 'active').length;
   return html`
   <header class="page-head">
     <div>
-      <h1>Overview</h1>
+      <h1>${greeting()}</h1>
       <div class="summary tnum">
-        <span>${s.working} working</span><span class="sep">·</span>
-        <span>${s.available} available</span><span class="sep">·</span>
-        <span title="${spendTitle(s.spend_today)}">${spendLabel(s.spend_today)}</span>
-        ${d.attention.length ? html`<span class="sep">·</span><button class="attn" data-ov="attn" aria-expanded="${attnOpen}" aria-controls="attn-panel"><span class="dot" aria-hidden="true"></span>${d.attention.length} need${d.attention.length === 1 ? 's' : ''} you</button>` : ''}
+        <span>Here's what's happening across your projects.</span>
         ${d.paused ? html`<span class="sep">·</span><span class="st st-paused">New work paused</span>` : ''}
       </div>
     </div>
@@ -36,41 +35,66 @@ export async function renderOverview(r) {
       ${connHtml()}
       ${runnerStale ? html`<span class="conn warn" title="${d.runner ? `Last runner heartbeat ${clock(d.runner.last_beat_at)}` : 'The runner has never reported'}"><span class="dot hollow"></span>Runner ${d.runner ? 'not reporting' : 'offline'}</span>` : ''}
       <span class="vr" aria-hidden="true"></span>
-      <button class="textbtn" data-action="${d.paused ? 'resume-all' : 'pause-all'}">${d.paused ? 'Resume all' : 'Pause all'}</button>
+      <button class="btn" data-action="${d.paused ? 'resume-all' : 'pause-all'}">${d.paused ? 'Resume all' : 'Pause all'}</button>
     </div>
   </header>
+
+  <div class="stats tnum">
+    <div class="card stat"><span class="ic">${icon('spark')}</span><strong>${s.working}</strong><span class="lbl">Working · ${s.available} available</span></div>
+    <div class="card stat"><span class="ic">${icon('check')}</span><strong>${openTasks}</strong><span class="lbl">Open tasks · ${active} active project${active === 1 ? '' : 's'}</span></div>
+    ${d.attention.length
+      ? html`<button class="card stat attention" data-ov="attn" aria-expanded="${attnOpen}" aria-controls="attn-panel"><span class="ic">${icon('alert')}</span><strong>${d.attention.length}</strong><span class="lbl">Need${d.attention.length === 1 ? 's' : ''} you · ${attnOpen ? 'Hide' : 'Show'}</span></button>`
+      : html`<div class="card stat"><span class="ic">${icon('alert')}</span><strong>0</strong><span class="lbl">Nothing needs you</span></div>`}
+    <div class="card stat" title="${spendTitle(s.spend_today)}"><span class="ic">${icon('coin')}</span><strong>${spendValue(s.spend_today)}</strong><span class="lbl">${spendCaption(s.spend_today)}</span></div>
+  </div>
   ${d.attention.length && attnOpen ? attentionPanel(d.attention) : ''}
 
-  ${switcher(d.projects, sel)}
-
-  ${sel ? html`
   <div class="ov-grid">
-    <section aria-labelledby="sel-title">${selectedProject(sel)}</section>
-    <div class="vline" aria-hidden="true"></div>
-    <section class="team" aria-labelledby="team-title">
-      <h2 id="team-title">Team</h2>
+    <section class="card" aria-labelledby="ap-title">
+      <div class="card-head"><h2 id="ap-title">Active projects <span class="count">${d.projects.length}</span></h2><a class="card-link" href="#/projects">All projects ${icon('right')}</a></div>
+      ${projectList(d.projects, sel)}
+    </section>
+    ${sel ? html`<section class="card" aria-labelledby="sel-title">${selectedProject(sel)}</section>`
+      : html`<section class="card"><div class="state-msg">No projects yet. <button class="textbtn" data-ov="add-project">Create your first project</button></div></section>`}
+  </div>
+
+  <div class="ov-grid lower">
+    <section class="card latest" aria-labelledby="lw-title">
+      <div class="card-head">
+        <h2 id="lw-title">Latest work</h2>
+        ${sel ? html`<div class="seg" role="group" aria-label="Filter latest work">
+          <button data-ov="filter" data-v="all" aria-pressed="${filter === 'all'}">All projects</button>
+          <button data-ov="filter" data-v="project" aria-pressed="${filter === 'project'}">${sel.name}</button>
+        </div>` : ''}
+      </div>
+      <table class="table lw tnum">
+        <colgroup><col class="c-time"><col class="c-proj"><col class="c-agent col-agent"><col></colgroup>
+        <thead><tr><th scope="col">Time</th><th scope="col">Project</th><th scope="col" class="col-agent">Agent</th><th scope="col">Update</th></tr></thead>
+        <tbody>
+          ${latest.length ? latest.slice(0, 8).map(workRow) : html`<tr class="empty-row"><td colspan="4">${filter === 'project' ? 'No work recorded for this project yet.' : 'No work recorded yet.'}</td></tr>`}
+        </tbody>
+      </table>
+      <p class="note"><a class="card-link" href="#/activity">All activity ${icon('right')}</a></p>
+    </section>
+    <section class="card team" aria-labelledby="team-title">
+      <div class="card-head"><h2 id="team-title">Team <span class="count">${d.team.length}</span></h2><a class="card-link" href="#/team">Manage ${icon('right')}</a></div>
       ${d.team.length ? d.team.map(teamRow) : html`<p class="state-msg">No agents yet. <a href="#/team">Add one</a></p>`}
     </section>
-  </div>` : html`
-  <div class="state-msg">No projects yet. <button class="textbtn" data-ov="add-project">Create your first project</button></div>`}
+  </div>`;
+}
 
-  <section class="latest" aria-labelledby="lw-title">
-    <div class="sec-head">
-      <h2 id="lw-title">Latest work</h2>
-      ${sel ? html`<div class="seg" role="group" aria-label="Filter latest work">
-        <button data-ov="filter" data-v="all" aria-pressed="${filter === 'all'}">All projects</button>
-        <button data-ov="filter" data-v="project" aria-pressed="${filter === 'project'}">${sel.name}</button>
-      </div>` : ''}
-    </div>
-    <table class="table lw tnum">
-      <colgroup><col class="c-time"><col class="c-proj"><col class="c-agent col-agent"><col></colgroup>
-      <thead><tr><th scope="col">Time</th><th scope="col">Project</th><th scope="col" class="col-agent">Agent</th><th scope="col">Update</th></tr></thead>
-      <tbody>
-        ${latest.length ? latest.slice(0, 8).map(workRow) : html`<tr class="empty-row"><td colspan="4">${filter === 'project' ? 'No work recorded for this project yet.' : 'No work recorded yet.'}</td></tr>`}
-      </tbody>
-    </table>
-    <p class="note"><a href="#/activity">All activity</a></p>
-  </section>`;
+function greeting() {
+  const h = new Date().getHours();
+  return h < 5 ? 'Good evening' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+// The stat card splits spendLabel() into a figure and a caption, with the same honesty rules.
+function spendValue(sp) {
+  if (sp.billable > 0 || (!sp.simulated && !sp.local)) return `${sp.estimated > 0 ? '≈' : ''}${money(sp.billable)}`;
+  return money(sp.simulated);
+}
+function spendCaption(sp) {
+  if (sp.billable > 0 || (!sp.simulated && !sp.local)) return `Spent today${sp.unknown_count ? ' + unknown' : ''}`;
+  return 'Simulated today';
 }
 
 function spendTitle(sp) {
@@ -84,38 +108,39 @@ function spendTitle(sp) {
 }
 
 function attentionPanel(items) {
-  return html`<div class="attn-panel" id="attn-panel"><ul>
+  return html`<div class="card attn-panel" id="attn-panel"><ul>
     ${items.map((a) => html`<li><span class="muted">${a.project_name}</span><a href="#/projects/${a.project_id}/tasks?task=${a.task_id}">${a.title}</a><span class="why">${a.blocked_reason || STATUS_LABEL[a.state]}</span></li>`)}
   </ul></div>`;
 }
 
-function switcher(projects, sel) {
-  return html`<div class="switcher">
-    <button class="iconbtn" data-ov="scroll" data-dir="-1" aria-label="Scroll projects left" hidden>${icon('left')}</button>
-    <div class="tabs-scroll" role="tablist" aria-label="Projects" data-keep-scroll="tabs">
-      ${projects.map((p) => {
-        const on = sel && p.id === sel.id;
-        const sub = p.status === 'paused' ? html`<span class="ptab-sub paused">Paused</span>`
-          : p.working ? html`<span class="ptab-sub working">${p.working} working</span>`
-          : html`<span class="ptab-sub idle">${p.open_tasks ? `${p.open_tasks} open` : 'Idle'}</span>`;
-        return html`<button class="ptab" role="tab" id="tab-${p.id}" data-key="tab-${p.id}" aria-selected="${on}" tabindex="${on ? 0 : -1}" data-ov="select" data-id="${p.id}">
-          <span class="ptab-icon">${icon(p.icon)}</span><span><span class="ptab-name">${p.name}</span>${sub}</span></button>`;
-      })}
-    </div>
-    <div class="switcher-end">
-      <button class="iconbtn" data-ov="scroll" data-dir="1" aria-label="Scroll projects right" hidden>${icon('right')}</button>
-      <span class="vr" aria-hidden="true"></span>
-      <button class="iconbtn" data-ov="add-project" aria-label="Add project" title="Add project">${icon('plus')}</button>
-    </div>
-  </div>`;
+function projectList(projects, sel) {
+  return html`<div role="tablist" aria-orientation="vertical" aria-label="Projects">
+    ${projects.map((p) => {
+      const on = sel && p.id === sel.id;
+      const sub = p.status === 'paused' ? html`<span class="psub paused">Paused</span>`
+        : p.working ? html`<span class="psub working">${p.working} working · ${p.open_tasks} open</span>`
+        : html`<span class="psub">${p.open_tasks ? `${p.open_tasks} open` : 'Idle'}</span>`;
+      const pct = p.tasks_total ? Math.round((p.tasks_done / p.tasks_total) * 100) : 0;
+      return html`<button class="prow" role="tab" id="tab-${p.id}" data-key="tab-${p.id}" aria-selected="${Boolean(on)}" tabindex="${on ? 0 : -1}" data-ov="select" data-id="${p.id}"
+        title="${p.tasks_done} of ${p.tasks_total} tasks completed">
+        <span class="ptab-icon">${icon(p.icon)}</span>
+        <span style="min-width:0"><span class="pname">${p.name}</span>${sub}</span>
+        <span class="bar" role="img" aria-label="${p.tasks_done} of ${p.tasks_total} tasks completed"><i style="width:${pct}%"></i></span>
+        <span class="pct">${p.tasks_total ? `${pct}%` : '—'}</span>
+        <span class="chev" aria-hidden="true">${icon('right')}</span>
+      </button>`;
+    })}
+  </div>
+  <button class="add-row" data-ov="add-project">${icon('plus')}Add project</button>`;
 }
 
 function selectedProject(p) {
   const m = p.next_milestone;
   return html`
-    <div class="proj-title"><h2 id="sel-title"><a href="#/projects/${p.id}">${p.name}</a></h2>${status(p.status)}</div>
-    <div class="next-row">
-      <span class="lbl">Next:${m ? html`<strong>${m.title}</strong>` : html`<strong class="muted">No open milestone</strong>`}</span>
+    <div class="card-head focus-head"><h2 id="sel-title"><a href="#/projects/${p.id}">${p.name}</a><span class="pill">${status(p.status)}</span></h2><a class="card-link" href="#/projects/${p.id}">Open ${icon('right')}</a></div>
+    <div class="next-box">
+      <span class="ic">${icon('flag')}</span>
+      <span class="grow"><span class="lbl">Next milestone</span>${m ? html`<strong>${m.title}</strong>` : html`<strong class="muted">No open milestone</strong>`}</span>
       <span class="due">${m?.due_at ? dueIn(m.due_at) : ''}</span>
     </div>
     <div class="sub-label">Assigned agents</div>
@@ -190,44 +215,21 @@ main.addEventListener('click', (e) => {
   else if (act === 'filter') { store(FILTER_KEY, b.dataset.v); go(location.hash); }
   else if (act === 'attn') { attnOpen = !attnOpen; go(location.hash); }
   else if (act === 'add-project') newProjectDialog((p) => { store(KEY, p.id); go(`#/overview?p=${p.id}`); });
-  else if (act === 'scroll') {
-    const s = main.querySelector('.tabs-scroll');
-    s.scrollBy({ left: Number(b.dataset.dir) * s.clientWidth * 0.8 });
-  }
 });
 // Roving tabindex for the project tabs (arrow keys, Home/End).
 main.addEventListener('keydown', (e) => {
-  const tab = e.target.closest('.ptab');
+  const tab = e.target.closest('.prow');
   if (!tab) return;
-  const tabs = [...main.querySelectorAll('.ptab')];
+  const tabs = [...main.querySelectorAll('.prow')];
   const i = tabs.indexOf(tab);
   let j = null;
-  if (e.key === 'ArrowRight') j = Math.min(tabs.length - 1, i + 1);
-  if (e.key === 'ArrowLeft') j = Math.max(0, i - 1);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') j = Math.min(tabs.length - 1, i + 1);
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') j = Math.max(0, i - 1);
   if (e.key === 'Home') j = 0;
   if (e.key === 'End') j = tabs.length - 1;
   if (j === null) return;
   e.preventDefault();
   tabs[j].focus();
-  tabs[j].scrollIntoView({ block: 'nearest', inline: 'nearest' });
 });
-// Show overflow arrows only when the tabs don't fit.
-function syncOverflow() {
-  const s = main.querySelector('.tabs-scroll');
-  if (!s) return;
-  const [l, r] = main.querySelectorAll('[data-ov="scroll"]');
-  const over = s.scrollWidth > s.clientWidth + 2;
-  l.hidden = !over || s.scrollLeft <= 2;
-  r.hidden = !over || s.scrollLeft + s.clientWidth >= s.scrollWidth - 2;
-}
-main.addEventListener('rendered', () => {
-  const s = main.querySelector('.tabs-scroll');
-  if (!s) return;
-  s.addEventListener('scroll', syncOverflow, { passive: true });
-  syncOverflow();
-  const sel = s.querySelector('[aria-selected="true"]');
-  if (sel && (sel.offsetLeft < s.scrollLeft || sel.offsetLeft + sel.offsetWidth > s.scrollLeft + s.clientWidth)) s.scrollLeft = sel.offsetLeft - 20;
-});
-window.addEventListener('resize', syncOverflow);
 
 export { raw };

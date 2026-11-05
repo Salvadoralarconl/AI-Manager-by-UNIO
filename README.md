@@ -6,7 +6,7 @@ A self-hosted dashboard and execution runner for a small AI team working across 
 
 ## What you get
 
-- **Overview** (the approved design): working/available counts and today's spend, server connection and Pause all, a project switcher, the selected project's next milestone and assigned agents, the global Team panel, and a full-width **Latest work** table across all projects. Blocked work and decisions show as a small "N need you" indicator that expands in place.
+- **Overview** (Folio-style calm overview): a greeting with server connection and Pause all; stat cards for working agents, open tasks, what needs you (expands in place) and today's spend; an **Active projects** list with task-completion bars that picks the selected project; the selected project's next milestone and assigned agents; a **Latest work** table across all projects; and the global Team panel. Navigation is a left sidebar on desktop and a floating bottom bar on phones.
 - **Projects**: create/edit, brief and goals, roadmap milestones (validation → development → storefront → marketing → sales → onboarding), tasks with dependencies and acceptance criteria, agent assignments, outputs, spending, pause/resume/archive.
 - **Team**: agent configuration (role, provider, model, capacity, capabilities, tools, instructions), status, current assignment, run history, run logs (observable actions only), outputs, errors, usage and cost, pause/resume.
 - **Activity**: searchable cross-project events with project, agent, type and date filters, linked to runs, tasks and deliverables.

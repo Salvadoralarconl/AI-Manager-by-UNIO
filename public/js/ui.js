@@ -50,6 +50,12 @@ export const ICONS = {
   team: `<svg viewBox="0 0 24 24" ${P}><circle cx="9" cy="8.5" r="3.5"/><path d="M3 19.5c.7-3.3 3-5 6-5s5.3 1.7 6 5"/><circle cx="17" cy="9.5" r="2.6"/><path d="M16.5 14.6c2.3.2 4 1.7 4.5 4.4"/></svg>`,
   pulse: `<svg viewBox="0 0 24 24" ${P}><path d="M3 12h4l2.5-6 4 13 2.5-7H21"/></svg>`,
   gear: `<svg viewBox="0 0 24 24" ${P}><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2.8 12h2.4M18.8 12h2.4M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/><circle cx="12" cy="12" r="6.6"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" ${P}><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>`,
+  spark: `<svg viewBox="0 0 24 24" ${P}><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4M6 6l2.6 2.6M15.4 15.4 18 18M6 18l2.6-2.6M15.4 8.6 18 6"/></svg>`,
+  coin: `<svg viewBox="0 0 24 24" ${P}><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2c-.5-.9-1.6-1.4-2.8-1.4-1.6 0-2.8.8-2.8 2s1.1 1.7 2.8 2.1c1.7.4 2.9.9 2.9 2.2s-1.3 2.1-2.9 2.1c-1.3 0-2.4-.5-2.9-1.5M12 6.3v1.5M12 16.2v1.5"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" ${P}><path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17.2v.1"/></svg>`,
+  flag: `<svg viewBox="0 0 24 24" ${P}><path d="M5.5 21V4M5.5 4.5h11l-2 4 2 4h-11"/></svg>`,
+  mark: `<svg viewBox="0 0 24 24" ${P}><rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><circle cx="16.5" cy="16.5" r="3.5"/></svg>`,
 };
 export const icon = (name) => raw(ICONS[name] ?? ICONS.window);
 
