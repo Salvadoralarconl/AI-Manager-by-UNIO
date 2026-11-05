@@ -489,6 +489,10 @@ export function overview(db, cfg, selectedId) {
   for (const p of projects) {
     p.working = agents.filter((a) => a.project_id === p.id && ['working', 'reviewing'].includes(a.status)).length;
     p.open_tasks = one(db, "SELECT COUNT(*) AS n FROM tasks WHERE project_id = ? AND state NOT IN ('completed','failed','cancelled')", p.id).n;
+    // Share of tasks completed (cancelled tasks don't count). A fact, not an ETA.
+    const t = one(db, "SELECT SUM(state = 'completed') AS done, SUM(state != 'cancelled') AS total FROM tasks WHERE project_id = ?", p.id);
+    p.tasks_done = t.done ?? 0;
+    p.tasks_total = t.total ?? 0;
   }
   const selected = projects.find((p) => p.id === selectedId) ?? projects[0] ?? null;
   let detail = null;

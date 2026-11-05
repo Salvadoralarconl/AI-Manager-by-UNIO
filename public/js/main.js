@@ -1,6 +1,6 @@
 // App shell: router, dock, live connection, shared drawer.
 import { api, html, icon, esc, toast } from './ui.js';
-import { renderOverview } from './overview.js';
+import { renderOverview, newProjectDialog } from './overview.js';
 import { renderProjects } from './projects.js';
 import { renderTeam, openAgentDrawer } from './team.js';
 import { renderActivity } from './activity.js';
@@ -26,8 +26,15 @@ export function route() {
 export function go(hash) { if (location.hash !== hash) location.hash = hash; else render(); }
 
 function renderDock(view) {
-  document.getElementById('dock').innerHTML = NAV.map(([id, label, ic]) =>
+  const nav = document.getElementById('dock');
+  const links = NAV.map(([id, label, ic]) =>
     html`<a href="#/${id}" ${id === view ? html`aria-current="page"` : ''}>${icon(ic)}<span>${label}</span></a>`.s).join('');
+  if (!nav.firstElementChild) {
+    nav.innerHTML = html`<div class="brand"><span class="brand-mark" aria-hidden="true">${icon('mark')}</span><span>AI Manager<small>by UNIO</small></span></div>
+      <div class="side-nav"></div>
+      <div class="side-foot"><button class="btn primary block" data-action="new-project">${icon('plus')}New project</button></div>`.s;
+  }
+  nav.querySelector('.side-nav').innerHTML = links;
 }
 
 let renderSeq = 0;
@@ -119,6 +126,7 @@ document.addEventListener('click', async (e) => {
   if (!b) return;
   const act = b.dataset.action;
   if (act === 'reload') return render();
+  if (act === 'new-project') return newProjectDialog((p) => go(`#/overview?p=${p.id}`));
   if (act === 'pause-all' || act === 'resume-all') {
     b.disabled = true;
     try { await api('/api/system/pause', { method: 'POST', body: { paused: act === 'pause-all' } }); toast(act === 'pause-all' ? 'New work paused. Running work finishes.' : 'Work resumed'); render({ soft: true }); }
